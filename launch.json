@@ -1,0 +1,26 @@
+{
+  "kind": "univ4_hook",
+  "hook": {
+    "contract": "MomentumFeeHook",
+    "constructorArgs": [
+      "0xE03A1074c86CFeDd5C142C4F04F1a1536e203543"
+    ],
+    "permissions": [
+      "afterSwap",
+      "afterSwapReturnDelta"
+    ]
+  },
+  "token": {
+    "contract": "Momentum",
+    "name": "Momentum",
+    "symbol": "MOMO",
+    "decimals": 18
+  },
+  "pool": {
+    "pairedCurrency": "0x0000000000000000000000000000000000000000",
+    "fee": 3000,
+    "tickSpacing": 60,
+    "initialPrice": "2506541289228028214046281103513"
+  },
+  "notes": "MomentumFeeHook extends v4-periphery BaseHook and takes only the Sepolia PoolManager address. Momentum has no constructor arguments. Sources: src/MomentumFeeHook.sol and src/Momentum.sol; ABI exports: docs/abi/MomentumFeeHook.json and docs/abi/Momentum.json. The launch pool sorts native ETH as currency0 and MOMO as currency1; zeroForOne is a buy. The static LP fee is 3000 (0.30%). initialPrice is decimal sqrtPriceX96 = TickMath.getSqrtPriceAtTick(69090), matching test/LaunchRehearsal.t.sol: approximately 1000.8997 MOMO per ETH. The rehearsal seeds one-sided MOMO below the opening price, with upper tick 69060, and exercises a first buy into the ETH-less pool followed by a sell. The hook declares only afterSwap and afterSwapReturnDelta (address permission mask 0x0044). Per PoolId, the fee is min(30 + 10*n, 200) bps for the current streak direction and 30 bps for the opposite direction, using the streak before the swap. Only swaps with absolute currency0 pool delta at least 0.001 ETH update the streak; dust pays its directional fee without changing state. Fees are ceil(abs(unspecified amount)*bps/10000), capped at that amount: deducted from output for exact input and added to input for exact output. Fees accrue as ERC-6909 claims without pushing assets during swaps. Anyone may call donateFees to burn that pool's claims and donate to in-range LPs; NoLiquidity leaves accrued claims pending. unlockCallback accepts only the PoolManager during a donation initiated by this hook. State is isolated by PoolId; other pools may attach the hook, with the qualification threshold applied to currency0 raw units. hookData is ignored and credits no swapper. A qualifying counter-swap can reset a streak at the cost of two hook fees plus LP fees for the round trip. Views expose nextFeeBps, streak and accrued; events are Momentum and FeesDonated. This manifest is a technical description; launch policy and signed artifact linkage belong to the later services."
+}
